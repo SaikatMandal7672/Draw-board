@@ -6,16 +6,18 @@ import { middleware } from "./middleware";
 import { CreateRoomSchema, SignInSchema, SignUpSchema } from "@repo/common/type"
 import bcrypt from "bcrypt"
 import { prismaClient } from "@repo/db"
+import { JWT_SECRET } from "be-common/config";
+
 
 app.use(express.json());
 app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
     res.json({
-        message: "Hello, World!"  // Just an example response
+        message: "Hello, World!"  // Just an example
     });
 });
-const JWT_SECRET = process.env.JWT_SECRET;
+
 app.post('/signup', async (req: Request, res: Response) => {
     const parsedData = SignUpSchema.safeParse(req.body)
 
@@ -47,7 +49,7 @@ app.post('/signup', async (req: Request, res: Response) => {
         return;
     }
 
-    const hashedPassword = await bcrypt.hash(req.body.hashedPassword, 10);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     try {
         const user = await prismaClient.user.create({
             data: {

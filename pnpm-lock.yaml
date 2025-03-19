@@ -114,6 +114,10 @@ importers:
       ws:
         specifier: ^8.18.1
         version: 8.18.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.13.9
 
   packages/be-common:
     dependencies:
@@ -143,6 +147,9 @@ importers:
       '@prisma/client':
         specifier: 6.5.0
         version: 6.5.0(prisma@6.5.0(typescript@5.8.2))(typescript@5.8.2)
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.13.9
       prisma:
         specifier: ^6.5.0
         version: 6.5.0(typescript@5.8.2)
