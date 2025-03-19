@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken"
 const app = express();
-import { JWT_SECRET } from "be-common/config";
 import { middleware } from "./middleware";
 import { CreateRoomSchema, SignInSchema, SignUpSchema } from "@repo/common/type"
 import bcrypt from "bcrypt"
@@ -16,7 +15,7 @@ app.get("/", (req: Request, res: Response) => {
         message: "Hello, World!"  // Just an example response
     });
 });
-
+const JWT_SECRET = process.env.JWT_SECRET;
 app.post('/signup', async (req: Request, res: Response) => {
     const parsedData = SignUpSchema.safeParse(req.body)
 
@@ -33,13 +32,9 @@ app.post('/signup', async (req: Request, res: Response) => {
             OR: [
                 {
                     email: parsedData.data?.email,
-
-
                 },
                 {
                     username: parsedData.data?.username,
-
-
                 }
             ]
         }
@@ -47,7 +42,7 @@ app.post('/signup', async (req: Request, res: Response) => {
     if (existingUser) {
         res.status(409).json({
             success: false,
-            message: "User already exists with the provided email or password"
+            message: "User already exists with the provided email or username"
         })
         return;
     }

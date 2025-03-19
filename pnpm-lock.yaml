@@ -117,13 +117,16 @@ importers:
 
   packages/be-common:
     dependencies:
-      '@types/node':
-        specifier: ^22.13.9
-        version: 22.13.9
+      zod:
+        specifier: ^3.24.2
+        version: 3.24.2
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.13.9
+        version: 22.13.9
 
   packages/common:
     dependencies:
