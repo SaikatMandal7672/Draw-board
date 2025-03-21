@@ -17,5 +17,9 @@
       "cache": false,
       "persistent": true
     }
-  }
+  },
+  "globalEnv": [
+    "JWT_KEY",
+    "HTTP_URL"
+  ]
 }

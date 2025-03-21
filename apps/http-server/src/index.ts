@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken"
 const app = express();
 import { middleware } from "./middleware";
 import { CreateRoomSchema, SignInSchema, SignUpSchema } from "@repo/common/type"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs";
 import { prismaClient } from "@repo/db"
 import { JWT_SECRET } from "be-common/config";
 
@@ -117,7 +117,8 @@ app.post('/signin', async (req: Request, res: Response) => {
             });
             return;
         }
-        const userId = user.id;
+        const userId = user.id; 
+
         if (!JWT_SECRET) {
             res.status(500).json({ error: "JWT_SECRET is not defined" });
             return;
@@ -150,7 +151,18 @@ app.post('/create-room', middleware, async (req: Request, res: Response) => {
         })
         return;
     }
-
+    const existingRoom = await prismaClient.room.findFirst({
+        where: {
+            slug: data.data?.name
+        }
+    })
+    if (existingRoom) {
+        res.status(409).json({
+            success: false,
+            message: "Room already exists. Provide a different name."
+        })
+        return;
+    }
     const userId = req.userId;
     if (!userId) {
         res.status(400).json({
@@ -183,7 +195,64 @@ app.post('/create-room', middleware, async (req: Request, res: Response) => {
     }
 
 })
-
+app.delete('/delete-room/:roomId', middleware, async (req: Request, res: Response) => {
+    const roomId = req.params.roomId;
+    if (!roomId) {
+        res.status(400).json({
+            success: false,
+            message: "Room Id not provided"
+        })
+        return;
+    }
+    const id = parseInt(roomId);
+    const userId = req.userId;
+    if (!roomId) {
+        res.status(400).json({
+            success: false,
+            message: "Room Id not provided"
+        })
+    }
+    if (!userId) {
+        res.status(400).json({
+            success: false,
+            message: "User not authenticated"
+        })
+    }
+    const room = await prismaClient.room.findFirst({
+        where: {
+            id
+        }
+    })
+    if (!room) {
+        res.status(408).json({
+            success: false,
+            message: "Room not found."
+        })
+        return;
+    }
+    const admin = await prismaClient.room.findFirst({
+        where: {
+            adminId: userId
+        }
+    })
+    if (!room) {
+        res.status(400).json({
+            success: false,
+            message: "Only admins can delete room."
+        })
+        return;
+    }
+    const deletedRoom = await prismaClient.room.delete({
+        where: {
+            id, adminId: userId
+        }
+    })
+    console.log(deletedRoom);
+    res.status(200).json({
+         success: true,
+        message: `Room ${deletedRoom.slug}  deleted`
+    })
+})
 app.listen(3001, () => {
     console.log("Server running on port 3001");
 });

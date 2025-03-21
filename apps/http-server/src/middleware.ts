@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-
+import { JWT_SECRET } from "be-common/config";
 export const middleware = (req: Request, res: Response, next: NextFunction): void => {
     const token = req.headers["authorization"];
 
@@ -9,7 +9,8 @@ export const middleware = (req: Request, res: Response, next: NextFunction): voi
         return;
     }
 
-    const secret = process.env.JWT_SECRET;
+    const secret = JWT_SECRET;
+    
     if (!secret) {
         console.log("JWT_SECRET missing");
         res.status(500).json({ message: "JWT_SECRET missing in environment variables" });
@@ -27,7 +28,7 @@ export const middleware = (req: Request, res: Response, next: NextFunction): voi
         req.userId = decoded.userId;
         next();
     } catch (error) {
-        res.status(401).json({ message: "Invalid token" });
+        res.status(401).json({ message: "NOT AUTHORIZED" });
         return;
     }
 };

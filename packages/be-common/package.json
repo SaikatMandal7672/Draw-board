@@ -3,21 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "exports": {
-    "./config": "./src/config.ts"
+    "./config": "./src/index.ts"
   },
-   
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.13.9"
+    "@repo/typescript-config": "workspace:*"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "zod": "^3.24.2"
+    "dotenv": "^16.4.7",
+    "@types/node": "^22.10.5"
   }
 }
