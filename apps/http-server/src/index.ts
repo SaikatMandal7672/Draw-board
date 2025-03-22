@@ -117,7 +117,7 @@ app.post('/signin', async (req: Request, res: Response) => {
             });
             return;
         }
-        const userId = user.id; 
+        const userId = user.id;
 
         if (!JWT_SECRET) {
             res.status(500).json({ error: "JWT_SECRET is not defined" });
@@ -195,6 +195,25 @@ app.post('/create-room', middleware, async (req: Request, res: Response) => {
     }
 
 })
+app.get('/chat/:roomId', middleware, async (req: Request, res: Response) => {
+    const roomId = parseInt(req.params.roomId || "0");
+
+    const chats = await prismaClient.chat.findMany({
+        where:{
+            roomId
+        },
+        orderBy:{
+            createdAt:"asc"
+        },     
+        take:200
+    })
+    res.status(200).json({
+        sucess:true,
+        message:"Chats fetched successfully",
+        data:chats
+    })
+
+})
 app.delete('/delete-room/:roomId', middleware, async (req: Request, res: Response) => {
     const roomId = req.params.roomId;
     if (!roomId) {
@@ -249,7 +268,7 @@ app.delete('/delete-room/:roomId', middleware, async (req: Request, res: Respons
     })
     console.log(deletedRoom);
     res.status(200).json({
-         success: true,
+        success: true,
         message: `Room ${deletedRoom.slug}  deleted`
     })
 })

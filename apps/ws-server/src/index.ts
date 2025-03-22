@@ -6,6 +6,7 @@ interface messageQueue {
     roomId: number;
     message: string;
     userId: string;
+    username?: string;
 }
 const wss = new WebSocketServer({ port: 8080 });
 const users = new Map(); // Use a Map for efficient lookups
@@ -26,38 +27,73 @@ async function processQueue() {
     const batch = messageQueue.splice(0, BATCH_SIZE);
     await prismaClient.chat.createMany({ data: batch });
 }
-setInterval(processQueue, 2000); // Run queue processing every 2 seconds
+setInterval(processQueue, 200); // Run queue processing every 2 seconds
 
-wss.on('connection', (ws, request) => {
+wss.on('connection', async (ws, request) => {
+    ws.send(JSON.stringify({ message: "connected" }));
+    //extract token from url
     const url = request.url;
     if (!url) return ws.close();
-
     const queryParams = new URLSearchParams(url.split('?')[1]);
     const token = queryParams.get('token') || "";
-    const userId = checkUser(token);
+    
+    const userId = checkUser(token); // //check if token is valid and returns the userId saved on db 
     if (!userId) return ws.close();
+    const userRecord = await prismaClient.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            username: true
+        }
+    });
+    const username = userRecord?.username || null;
+    if (!username) {
+        ws.send(JSON.stringify({ success:false, message: "Cannot find username" }));
+        return ws.close();
+    }
 
-    users.set(userId, { ws, rooms: new Set() });
+    if (!users.has(userId)) {
+        users.set(userId, { sockets: new Set(), rooms: new Set() });
+      }
+    const subUsers = users.get(userId);
+    subUsers.sockets.add(ws);
 
-    ws.on('message', (data) => {
+    ws.on('message', async (data) => {
         try {
+            
             const parsedData = JSON.parse(data.toString());
             console.log(parsedData)
-            const user = users.get(userId);
+            const user = users.get(userId); //  user obtained from the map
+
             if (!user) return;
 
-            if (parsedData.type === "join_room") {
+            const roomId = parsedData.roomId;
+            const roomExists = await prismaClient.room.findUnique({
+                where: {
+                    id: roomId
+                }
+            });
+            if (parsedData.type === "join_room" && roomExists) {
+                
                 user.rooms.add(parsedData.roomId);
-            } else if (parsedData.type === "leave_room") {
+            }
+            else if (parsedData.type === "leave_room") {
+
                 user.rooms.delete(parsedData.roomId);
-            } else if (parsedData.type === "chat") {
+            }
+            else if (parsedData.type === "chat" && roomExists ) {
+
                 const { roomId, message } = parsedData;
-                messageQueue.push({ roomId: roomId, message, userId });
-                users.forEach(({ ws, rooms }) => {
+                messageQueue.push({ roomId: roomId, message, userId, username });
+                users.forEach(({ sockets, rooms }) => {
                     if (rooms.has(roomId)) {
-                        ws.send(JSON.stringify({ type: "chat", message, roomId }));
+                        sockets.forEach( (ws:WebSocket) =>{
+                            ws.send(JSON.stringify({ type: "chat", message, roomId, username }));
+                        })
                     }
                 });
+
             }
         } catch (error) {
             console.error("Error processing message:", error);
@@ -65,6 +101,7 @@ wss.on('connection', (ws, request) => {
     });
 
     ws.on('close', () => {
-        users.delete(userId);
+        ws.send(JSON.stringify({ message:"connection closed"}));
+        ws.close()
     });
 });

@@ -10,7 +10,7 @@ datasource db {
 model User {
   id       String  @id @default(uuid())
   email    String  @unique
-  username     String
+  username String
   password String
   photo    String?
   Room     Room[]
@@ -30,6 +30,7 @@ model Chat {
   id        Int      @id @default(autoincrement())
   message   String
   createdAt DateTime @default(now())
+  username  String   @default("Anonymous")
   userId    String
   roomId    Int
   User      User     @relation(fields: [userId], references: [id])
