@@ -60,7 +60,7 @@ app.post('/signup', async (req: Request, res: Response) => {
         })
         res.status(200).json({
             success: true,
-            message: 'User Created Successfully',
+            message: 'User Signed up Successfully',
             userId: user.id
         })
         return;
@@ -126,14 +126,14 @@ app.post('/signin', async (req: Request, res: Response) => {
         const token = jwt.sign({ userId }, JWT_SECRET);
         res.status(200).json({
             sucess: true,
-            message: "User found",
+            message: "User signed in",
             token
         })
         return;
 
     } catch (error) {
         console.log("\n Signin Error", error, '\n')
-        const errorMessage = (error as Error).message;
+        const errorMessage = (error as Error).message + "| User signin Failed";
         res.status(500).json({
             success: false,
             message: errorMessage
@@ -199,18 +199,18 @@ app.get('/chat/:roomId', middleware, async (req: Request, res: Response) => {
     const roomId = parseInt(req.params.roomId || "0");
 
     const chats = await prismaClient.chat.findMany({
-        where:{
+        where: {
             roomId
         },
-        orderBy:{
-            createdAt:"asc"
-        },     
-        take:200
+        orderBy: {
+            createdAt: "asc"
+        },
+        take: 200
     })
     res.status(200).json({
-        sucess:true,
-        message:"Chats fetched successfully",
-        data:chats
+        sucess: true,
+        message: "Chats fetched successfully",
+        data: chats
     })
 
 })
