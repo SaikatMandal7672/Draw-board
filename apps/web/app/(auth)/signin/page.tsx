@@ -88,7 +88,7 @@ const SignIn = () => {
                                 </FormItem>
                             )}
                         />
-                        <Button type="submit" className='w-full bg-matisse-200 text-matisse-700 hover:bg-matisse-700 hover:text-matisse-50 ' disabled={isSubmitting}>
+                        <Button type="submit" className='w-full bg-matisse-200 text-matisse-700 hover:bg-matisse-700 hover:text-matisse-50 shadow-matisse-600/50 drop-shadow-xl shadow-md' disabled={isSubmitting}>
                             {isSubmitting ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
