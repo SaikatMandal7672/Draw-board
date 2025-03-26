@@ -43,7 +43,6 @@ const JoinRoom = () => {
             toast.error("Error occured")
         }
         setIsSubmitting(false);
-        
 
 
     }

@@ -8,6 +8,7 @@ export default function RoomsLayout({ children }: Readonly<{ children: React.Rea
         const token = localStorage.getItem("token");
         if (!token) router.push("/signin");
     },[router])
+    
     return <div >
         {children}
         

@@ -20,6 +20,7 @@
   },
   "globalEnv": [
     "JWT_KEY",
-    "HTTP_URL"
+    "HTTP_URL",
+    "WS_URL"
   ]
 }

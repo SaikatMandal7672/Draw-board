@@ -1,14 +1,14 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken"
-const app = express();
+import cookiParser from "cookie-parser"
 import { middleware } from "./middleware";
 import { CreateRoomSchema, SignInSchema, SignUpSchema } from "@repo/common/type"
 import bcrypt from "bcryptjs";
 import { prismaClient } from "@repo/db"
 import { JWT_SECRET } from "be-common/config";
 
-
+const app = express();
 app.use(express.json());
 app.use(cors());
 
@@ -124,6 +124,11 @@ app.post('/signin', async (req: Request, res: Response) => {
             return;
         }
         const token = jwt.sign({ userId }, JWT_SECRET);
+        res.cookie("token",token,{
+            httpOnly:true,
+            sameSite:"lax",
+            path:"/"
+        })
         res.status(200).json({
             sucess: true,
             message: "User signed in",
@@ -225,7 +230,7 @@ app.post('/roomid',middleware ,async (req: Request, res: Response) => {
     }
 
 } )
-app.get('/chats/:roomId', middleware, async (req: Request, res: Response) => {
+app.get('/chats/:roomId',  async (req: Request, res: Response) => {
     const roomId = parseInt(req.params.roomId || "0");
 
     try {
