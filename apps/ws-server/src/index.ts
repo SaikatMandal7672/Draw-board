@@ -38,7 +38,9 @@ wss.on('connection', async (ws, request) => {
     const token = queryParams.get('token') || "";
     
     const userId = checkUser(token); // //check if token is valid and returns the userId saved on db 
-    if (!userId) return ws.close();
+    if (!userId) {
+        ws.send(JSON.stringify({ success:false, message: "Cannot find user" }))
+        return ws.close();}
     const userRecord = await prismaClient.user.findUnique({
         where: {
             id: userId
@@ -68,7 +70,7 @@ wss.on('connection', async (ws, request) => {
 
             if (!user) return;
 
-            const roomId = parsedData.roomId;
+            const roomId = Number(parsedData.roomId);
             const roomExists = await prismaClient.room.findUnique({
                 where: {
                     id: roomId
@@ -83,9 +85,10 @@ wss.on('connection', async (ws, request) => {
                 user.rooms.delete(parsedData.roomId);
             }
             else if (parsedData.type === "chat" && roomExists ) {
-
+                console.log("control reached");
+                
                 const { roomId, message } = parsedData;
-                messageQueue.push({ roomId: roomId, message, userId, username });
+                messageQueue.push({ roomId: Number(roomId), message, userId, username });
                 users.forEach(({ sockets, rooms }) => {
                     if (rooms.has(roomId)) {
                         sockets.forEach( (ws:WebSocket) =>{
